@@ -68,7 +68,7 @@ public class RepairMinigame : MonoBehaviour
 
         // 2. คำนวณขอบขวาสุด
         targetMax = targetMin + zoneWidth;
-
+        Debug.Log($"<color=green>สุ่มโซนเขียวใหม่:</color> ซ้ายสุดที่ {targetMin:F2} | ขวาสุดที่ {targetMax:F2}");
         // 3. สั่งย้ายตำแหน่งภาพโซนสีเขียวใน UI (ใช้ท่าไม้ตาย Anchors)
         if (greenZone != null)
         {
@@ -80,5 +80,59 @@ public class RepairMinigame : MonoBehaviour
             greenZone.offsetMin = Vector2.zero; // ลบขยะค่าพิกเซลเดิมทิ้ง
             greenZone.offsetMax = Vector2.zero;
         }
+    }
+
+    // ฟังก์ชันนี้ไว้ลากไปใส่ในช่อง OnClick() ของ Button ใน Unity
+    public void OnRepairClick()
+    {
+        if (isLockout) return; // ถ้าโดนแบนอยู่ กดไปก็ไม่มีอะไรเกิดขึ้น
+
+        // เช็คว่าตำแหน่งเข็ม (progress) อยู่ระหว่างโซนเขียวไหม
+        if (progress >= targetMin && progress <= targetMax)
+        {
+            HandleSuccess();
+        }
+        else
+        {
+            HandleFail();
+        }
+    }
+
+    void HandleSuccess()
+    {
+        Debug.Log("<color=cyan>ซ่อมสำเร็จ!</color>");
+        //missCount = 0; // รีเซ็ตแต้มพลาด
+        RandomizeGreenZone(); // ย้ายที่โซนเขียว
+        RandomizeSpeed(); // กวนตีนต่อด้วยสปีดใหม่
+        // TODO: สั่งเพิ่มเลือดป้อมตรงนี้
+    }
+
+    void HandleFail()
+    {
+        missCount++;
+        Debug.Log($"<color=red>พลาด!</color> สะสมแต้มพลาด: {missCount}/3");
+
+        // TODO: สั่งลดเลือดป้อมตรงนี้ (บทลงโทษกดพลาด)
+
+        if (missCount >= 3)
+        {
+            StartCoroutine(LockoutRoutine());
+        }
+    }
+
+    IEnumerator LockoutRoutine()
+    {
+        isLockout = true;
+        Debug.Log("<color=orange>LOCKED OUT! รอ 5 วินาที...</color>");
+
+        // ซ่อน UI หรือทำให้เป็นสีเทาตามใจชอบ
+        // repairGroup.SetActive(false); 
+
+        yield return new WaitForSeconds(5f);
+
+        isLockout = false;
+        missCount = 0;
+        // repairGroup.SetActive(true);
+        Debug.Log("ปลดล็อกแล้ว! ซ่อมต่อได้");
     }
 }

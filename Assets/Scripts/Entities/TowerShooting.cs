@@ -16,7 +16,7 @@ public class TowerShooting : MonoBehaviour
         // Shoot every x seconds
         if (Time.time > nextFireTime)
         {
-            Debug.Log("Shooting!");
+            //Debug.Log("Shooting!");
             //Debug.Log(Time.time);
             nextFireTime = Time.time + cooldownTime; // Next time to shoot is current time + cooldown
             shoot();
