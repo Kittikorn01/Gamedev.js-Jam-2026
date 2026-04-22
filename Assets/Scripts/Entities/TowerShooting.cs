@@ -5,8 +5,12 @@ public class TowerShooting : MonoBehaviour
     public Transform bulletpoint;
     public GameObject bulletPrefab;
     public float cooldownTime = 2.0f; // Time Cooldown 
-    private float nextFireTime = 2.0f;  // Next time to shoot
+    private float nextFireTime = 0;  // Next time to shoot
 
+    void Start()
+    {
+        nextFireTime = Time.time + cooldownTime; // Start shooting after cooldown time
+    }
     void Update()
     {
         // Shoot every x seconds
