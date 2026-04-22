@@ -20,7 +20,7 @@ public class Health : MonoBehaviour
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
-        Debug.Log(gameObject.name + " health: " + currentHealth); // Current health 
+        //Debug.Log(gameObject.name + " health: " + currentHealth); // Current health 
 
         if (healthBar != null)
         {

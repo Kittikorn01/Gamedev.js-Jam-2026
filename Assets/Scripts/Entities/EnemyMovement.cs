@@ -47,7 +47,7 @@ public class EnemyMovement : MonoBehaviour
             Debug.Log("Enemy hit tower");
             isMoving = false;
             targetTower = collision.GetComponent<Health>();
-            //attackTimer = attackCooldown; // Enemy hit the tower start attacking
+            attackTimer = attackCooldown; // Enemy hit the tower start attacking
         }
     }
 }
