@@ -7,7 +7,7 @@ public class EnemyMovement : MonoBehaviour
 
     public float attackCooldown = 2f;
     private float attackTimer = 0f;
-    public int damage = 1;
+    public float damage = 1.0f;
 
     private Health targetTower;
 
@@ -47,7 +47,7 @@ public class EnemyMovement : MonoBehaviour
             Debug.Log("Enemy hit tower");
             isMoving = false;
             targetTower = collision.GetComponent<Health>();
-            attackTimer = attackCooldown; // Enemy hit the tower start attacking
+            //attackTimer = attackCooldown; // Enemy hit the tower start attacking
         }
     }
 }
