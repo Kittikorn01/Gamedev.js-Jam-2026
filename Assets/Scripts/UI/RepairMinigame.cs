@@ -16,6 +16,15 @@ public class RepairMinigame : MonoBehaviour
     [Header("Zone Settings")]
     public float zoneWidth = 0.15f; // width of green zone
 
+    [Header("Tower Reference")]
+    // เปลี่ยนคำว่า TowerHealth เป็นชื่อสคริปต์เลือดป้อมของตั้มจริงๆ นะ
+    public Health myTowerHealth;
+
+    [Header("UI Visuals")]
+    public GameObject repairVisuals; // ลากตัว RepairVisuals มาใส่ช่องนี้
+
+    private bool isRepairActive = false; // ตัวแปรจำสถานะว่าหน้าต่างเปิดอยู่ไหม
+
     private float currentSpeed;
     private float progress = 0f; // record the current position of the needle (0 to 1)
     private int direction = 1;   // 1 for moving right, -1 for moving left
@@ -23,17 +32,48 @@ public class RepairMinigame : MonoBehaviour
     private bool isLockout = false;
     private float targetMin;
     private float targetMax;
-    private bool movingForward = true; // ใช้เช็คทิศทางเข็ม
+    //private bool movingForward = true; // ใช้เช็คทิศทางเข็ม
 
     void Start()
     {
+        // ท่าไม้ตาย: สั่งให้ UI ซ่อม วิ่งไปหา Component Health บนตัวพ่อ (ป้อม) อัตโนมัติ
+        if (myTowerHealth == null)
+        {
+            myTowerHealth = GetComponentInParent<Health>();
+
+            if (myTowerHealth == null)
+            {
+                Debug.LogError("หาหลอดเลือดป้อมไม่เจอ! แน่ใจนะว่า UI นี้อยู่ในป้อม?");
+            }
+        }
+
         RandomizeSpeed();
         RandomizeGreenZone();
     }
 
     void Update()
     {
-        if (isLockout) return;
+        // 1. ระบบเช็คเลือดเปิด/ปิดมินิเกม
+        if (myTowerHealth != null)
+        {
+            float currentHP = myTowerHealth.currentHealth; // เปลี่ยนให้ตรงกับชื่อตัวแปรใน Health.cs
+            float maxHP = myTowerHealth.maxHealth;
+
+            // เงื่อนไขเปิด: เลือดต่ำกว่าหรือเท่ากับ 50% และยังไม่ได้เปิด
+            if (currentHP <= maxHP * 0.5f && !isRepairActive)
+            {
+                isRepairActive = true;
+                repairVisuals.SetActive(true);
+            }
+            // เงื่อนไขปิด: เลือดเต็ม 100% และกำลังเปิดอยู่
+            else if (currentHP >= maxHP && isRepairActive)
+            {
+                isRepairActive = false;
+                repairVisuals.SetActive(false);
+            }
+        }
+
+        if (!isRepairActive || isLockout) return;
 
         // 1. update the needle position based on current speed and direction   
         progress += currentSpeed * Time.deltaTime * direction;
@@ -102,6 +142,12 @@ public class RepairMinigame : MonoBehaviour
     {
         Debug.Log("<color=cyan>ซ่อมสำเร็จ!</color>");
         //missCount = 0; // รีเซ็ตแต้มพลาด
+
+        if (myTowerHealth != null)
+        {
+            myTowerHealth.Heal(1); // หรือชื่อฟังก์ชันฮีลที่ตั้มตั้งไว้ใน Health.cs
+        }
+
         RandomizeGreenZone(); // ย้ายที่โซนเขียว
         RandomizeSpeed(); // กวนตีนต่อด้วยสปีดใหม่
         // TODO: สั่งเพิ่มเลือดป้อมตรงนี้
@@ -113,6 +159,10 @@ public class RepairMinigame : MonoBehaviour
         Debug.Log($"<color=red>พลาด!</color> สะสมแต้มพลาด: {missCount}/3");
 
         // TODO: สั่งลดเลือดป้อมตรงนี้ (บทลงโทษกดพลาด)
+        if (myTowerHealth != null)
+        {
+            myTowerHealth.TakeDamage(1); // หรือชื่อฟังก์ชันลดเลือดที่ตั้มตั้งไว้
+        }
 
         if (missCount >= 3)
         {

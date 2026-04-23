@@ -3,7 +3,7 @@ using UnityEngine;
 public class Health : MonoBehaviour
 {
     public int maxHealth = 3; 
-    [SerializeField] private float currentHealth;
+    public float currentHealth;
 
     public HealthBar healthBar;
 
@@ -31,5 +31,11 @@ public class Health : MonoBehaviour
         {
             Destroy(gameObject); // if health is 0 destroy enemy
         }
+    }
+
+    public void Heal(float heal)
+    {
+        currentHealth += heal;
+        healthBar.SetHealth(currentHealth, maxHealth);
     }
 }
