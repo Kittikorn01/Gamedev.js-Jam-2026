@@ -29,8 +29,25 @@ public class Health : MonoBehaviour
 
         if (currentHealth <= 0)
         {
-            Destroy(gameObject); // if health is 0 destroy enemy
+            Die(); // if health is 0 destroy enemy
         }
+    }
+
+    void Die()
+    {
+        // 1. เช็คก่อนว่าคนที่ตายเนี่ย ใช่ "Enemy" ไหม? 
+        // (เผื่อป้อมตาย จะได้ไม่ไปกวนระบบนับแต้มศัตรู)
+        if (gameObject.CompareTag("Enemy"))
+        {
+            // ตะโกนบอก WaveManager ว่าหนูตายแล้วจ้า!
+            if (WaveManager.instance != null)
+            {
+                WaveManager.instance.EnemyKilled();
+            }
+        }
+
+        // 2. ทำลาย Object ตัวเองทิ้ง (โค้ดเดิมของตั้ม)
+        Destroy(gameObject);
     }
 
     public void Heal(float heal)
