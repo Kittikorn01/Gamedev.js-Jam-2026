@@ -16,6 +16,9 @@ public class WaveManager : MonoBehaviour
     [Header("UI Elements")]
     public GameObject winPanel;
 
+    [Header("Game Start Condition")]
+    public int readyLanes = 0; // นับว่าวางป้อมไปกี่เลนแล้ว
+
     // Instance แบบ Singleton (เพื่อให้ศัตรูที่เพิ่งเกิด สามารถวิ่งมาหา Manager เพื่อรายงานตัวตอนตายได้ง่ายๆ)
     public static WaveManager instance;
 
@@ -28,8 +31,7 @@ public class WaveManager : MonoBehaviour
     {
         if (winPanel != null) winPanel.SetActive(false);
 
-        // สั่งให้ระบบเสกมอนสเตอร์เริ่มทำงาน
-        StartCoroutine(SpawnEnemyRoutine());
+        
     }
 
     // 1. ระบบเสกมอนสเตอร์ (ทำงานแยกเป็นอิสระ ไม่กวน Update)
@@ -71,5 +73,29 @@ public class WaveManager : MonoBehaviour
 
         if (winPanel != null) winPanel.SetActive(true);
         Time.timeScale = 0f; // หยุดเกม
+    }
+
+    // เพิ่มฟังก์ชันใหม่ให้ BaseHealth มาเรียกตอนมอนสเตอร์หลุดเข้าบ้าน
+    public void EnemyEscaped()
+    {
+        enemiesKilled++; // ใช้ตัวแปรเดิมนับรวมไปเลย จะได้ไม่ซับซ้อน
+        Debug.Log($"<color=orange>มอนสเตอร์หนีเข้าบ้าน!</color> จัดการไปแล้ว: {enemiesKilled}/{totalEnemies}");
+
+        // เช็คชนะเหมือนเดิม (ถ้าหลุดเข้าบ้านแล้วเลือดบ้านยังไม่หมด ก็ถือว่ารอด Wave นี้)
+        if (enemiesKilled >= totalEnemies)
+        {
+            TriggerWinCondition();
+        }
+    }
+
+    // ให้ TowerSlot มาเรียกฟังก์ชันนี้ตอนวางป้อมครั้งแรก
+    public void TowerPlacedForFirstTime()
+    {
+        readyLanes++;
+        if (readyLanes >= 3)
+        {
+            Debug.Log("<color=green>วางครบ 3 เลนแล้ว! มอนสเตอร์บุกได้!</color>");
+            StartCoroutine(SpawnEnemyRoutine()); // สั่งมอนสเตอร์เริ่มเกิดตรงนี้!
+        }
     }
 }

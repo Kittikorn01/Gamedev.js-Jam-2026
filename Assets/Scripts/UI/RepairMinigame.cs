@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using TMPro;
 
 public class RepairMinigame : MonoBehaviour
 {
@@ -23,6 +24,11 @@ public class RepairMinigame : MonoBehaviour
     [Header("UI Visuals")]
     public GameObject repairVisuals; // ลากตัว RepairVisuals มาใส่ช่องนี้
 
+    [Header("UI Feedback")]
+    public GameObject floatingTextPrefab; // ใส่ Prefab ตัวอักษรลอย
+    public Transform textSpawnPoint; // ใส่ตำแหน่งที่จะให้ตัวเลขเด้ง (ลาก Canvas หรือ RepairVisuals มาใส่ก็ได้)
+    public GameObject lockoutPanel; // ใส่ป้ายสีแดง Overheat
+
     private bool isRepairActive = false; // ตัวแปรจำสถานะว่าหน้าต่างเปิดอยู่ไหม
 
     private float currentSpeed;
@@ -33,6 +39,8 @@ public class RepairMinigame : MonoBehaviour
     private float targetMin;
     private float targetMax;
     //private bool movingForward = true; // ใช้เช็คทิศทางเข็ม
+
+    public float lockoutTimer = 0f; // ตัวแปรจับเวลาการแบน
 
     void Start()
     {
@@ -59,17 +67,20 @@ public class RepairMinigame : MonoBehaviour
             float currentHP = myTowerHealth.currentHealth; // เปลี่ยนให้ตรงกับชื่อตัวแปรใน Health.cs
             float maxHP = myTowerHealth.maxHealth;
 
-            // เงื่อนไขเปิด: เลือดต่ำกว่าหรือเท่ากับ 50% และยังไม่ได้เปิด
-            if (currentHP <= maxHP * 0.5f && !isRepairActive)
+            if (maxHP > 0)
             {
-                isRepairActive = true;
-                repairVisuals.SetActive(true);
-            }
-            // เงื่อนไขปิด: เลือดเต็ม 100% และกำลังเปิดอยู่
-            else if (currentHP >= maxHP && isRepairActive)
-            {
-                isRepairActive = false;
-                repairVisuals.SetActive(false);
+                // เงื่อนไขเปิด: เลือดต่ำกว่าหรือเท่ากับ 50% และยังไม่ได้เปิด
+                if (currentHP <= maxHP * 0.5f && !isRepairActive)
+                {
+                    isRepairActive = true;
+                    repairVisuals.SetActive(true);
+                }
+                // เงื่อนไขปิด: เลือดเต็ม 100% และกำลังเปิดอยู่
+                else if (currentHP >= maxHP && isRepairActive)
+                {
+                    isRepairActive = false;
+                    repairVisuals.SetActive(false);
+                }
             }
         }
 
@@ -94,6 +105,9 @@ public class RepairMinigame : MonoBehaviour
             direction = 1;      
             RandomizeSpeed();   
         }
+
+        
+
     }
 
     void RandomizeSpeed()
@@ -143,14 +157,15 @@ public class RepairMinigame : MonoBehaviour
         Debug.Log("<color=cyan>ซ่อมสำเร็จ!</color>");
         //missCount = 0; // รีเซ็ตแต้มพลาด
 
-        if (myTowerHealth != null)
-        {
-            myTowerHealth.Heal(1); // หรือชื่อฟังก์ชันฮีลที่ตั้มตั้งไว้ใน Health.cs
-        }
-
         RandomizeGreenZone(); // ย้ายที่โซนเขียว
         RandomizeSpeed(); // กวนตีนต่อด้วยสปีดใหม่
         // TODO: สั่งเพิ่มเลือดป้อมตรงนี้
+
+        if (myTowerHealth != null)
+        {
+            myTowerHealth.Heal(1); // หรือชื่อฟังก์ชันฮีลที่ตั้มตั้งไว้ใน Health.cs
+            ShowFloatingText("+1", Color.green);
+        }
     }
 
     void HandleFail()
@@ -162,6 +177,7 @@ public class RepairMinigame : MonoBehaviour
         if (myTowerHealth != null)
         {
             myTowerHealth.TakeDamage(1); // หรือชื่อฟังก์ชันลดเลือดที่ตั้มตั้งไว้
+            ShowFloatingText("-1", Color.red);
         }
 
         if (missCount >= 3)
@@ -173,6 +189,10 @@ public class RepairMinigame : MonoBehaviour
     IEnumerator LockoutRoutine()
     {
         isLockout = true;
+        missCount = 0;
+        // เปิดป้ายแดง
+        if (lockoutPanel != null) lockoutPanel.SetActive(true);
+
         Debug.Log("<color=orange>LOCKED OUT! รอ 5 วินาที...</color>");
 
         // ซ่อน UI หรือทำให้เป็นสีเทาตามใจชอบ
@@ -183,6 +203,31 @@ public class RepairMinigame : MonoBehaviour
         isLockout = false;
         missCount = 0;
         // repairGroup.SetActive(true);
+        // ปิดป้ายแดง
+        if (lockoutPanel != null) lockoutPanel.SetActive(false);
         Debug.Log("ปลดล็อกแล้ว! ซ่อมต่อได้");
+    }
+
+    // ฟังก์ชันเสริมสำหรับเสกตัวหนังสือ (พิมพ์เพิ่มไว้ล่างสุด)
+    void ShowFloatingText(string message, Color textColor)
+    {
+        if (floatingTextPrefab != null && textSpawnPoint != null)
+        {
+            GameObject textObj = Instantiate(floatingTextPrefab, textSpawnPoint.position, Quaternion.identity, textSpawnPoint);
+
+            // +++ เปลี่ยนมาใช้ TextMeshProUGUI แทน Text ธรรมดา +++
+            // ใช้ GetComponentInChildren เผื่อตั้มเอา Text ไปใส่ไว้ในลูกของ Prefab
+            TextMeshProUGUI myText = textObj.GetComponentInChildren<TextMeshProUGUI>();
+
+            if (myText != null)
+            {
+                myText.text = message;
+                myText.color = textColor;
+            }
+            else
+            {
+                Debug.LogWarning("หา TextMeshPro ไม่เจอ! ตรวจสอบ Prefab ด่วน!");
+            }
+        }
     }
 }

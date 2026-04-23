@@ -7,7 +7,7 @@ public class Health : MonoBehaviour
 
     public HealthBar healthBar;
 
-    void Start()
+    void Awake ()
     {
         currentHealth = maxHealth;
 

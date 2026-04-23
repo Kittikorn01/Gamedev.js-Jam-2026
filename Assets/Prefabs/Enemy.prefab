@@ -103,7 +103,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f38e689d863384b982010cd40fc436, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 2
+  speed: 3.5
   attackCooldown: 1.5
   damage: 1
 --- !u!50 &5755508159629408170
@@ -191,6 +191,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 073606bcce5d87e499ac16e6cc2a11bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 3
+  maxHealth: 6
   currentHealth: 0
   healthBar: {fileID: 0}

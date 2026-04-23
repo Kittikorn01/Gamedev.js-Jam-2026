@@ -33,6 +33,12 @@ public class BaseHealth : MonoBehaviour
             currentHealth--; // เลือดบ้านลดลง 1
             Debug.Log($"<color=orange>ศัตรูหลุดเข้าบ้าน!</color> เลือดบ้านเหลือ: {currentHealth}/{maxHealth}");
 
+            // +++ เพิ่ม 3 บรรทัดนี้เข้าไป เพื่อบอก WaveManager ว่ามันหลุดเข้ามานะ! +++
+            if (WaveManager.instance != null)
+            {
+                WaveManager.instance.EnemyEscaped();
+            }
+
             // ลบศัตรูตัวนั้นทิ้งไปเลย จะได้ไม่เดินทะลุจอไปเรื่อยๆ จนกินสเปคเครื่อง
             Destroy(other.gameObject);
 
