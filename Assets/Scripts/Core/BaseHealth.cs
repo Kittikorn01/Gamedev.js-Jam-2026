@@ -10,6 +10,9 @@ public class BaseHealth : MonoBehaviour
     [Header("UI Elements")]
     public GameObject losePanel; // เอาไว้ใส่หน้าต่าง Game Over ที่เราสร้างไว้
 
+    [Header("UI System")]
+    public GameObject[] heartsUI; // อาเรย์สำหรับเก็บรูปหัวใจ
+
     void Start()
     {
         currentHealth = maxHealth;
@@ -33,6 +36,8 @@ public class BaseHealth : MonoBehaviour
             currentHealth--; // เลือดบ้านลดลง 1
             Debug.Log($"<color=orange>ศัตรูหลุดเข้าบ้าน!</color> เลือดบ้านเหลือ: {currentHealth}/{maxHealth}");
 
+            UpdateHeartsUI();
+
             // +++ เพิ่ม 3 บรรทัดนี้เข้าไป เพื่อบอก WaveManager ว่ามันหลุดเข้ามานะ! +++
             if (WaveManager.instance != null)
             {
@@ -46,6 +51,22 @@ public class BaseHealth : MonoBehaviour
             if (currentHealth <= 0)
             {
                 TriggerLoseCondition();
+            }
+        }
+    }
+
+    private void UpdateHeartsUI()
+    {
+        // วนลูปเช็คว่าเลือดเหลือเท่าไหร่ ก็เปิดหัวใจแค่นั้น
+        for (int i = 0; i < heartsUI.Length; i++)
+        {
+            if (i < currentHealth)
+            {
+                heartsUI[i].SetActive(true); // เลือดถึง เปิดไว้
+            }
+            else
+            {
+                heartsUI[i].SetActive(false); // เลือดไม่ถึง ปิดทิ้งไป
             }
         }
     }

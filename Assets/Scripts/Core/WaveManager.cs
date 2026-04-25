@@ -1,5 +1,6 @@
 using System.Collections; // ต้องมีบรรทัดนี้เพื่อใช้ Coroutine (IEnumerator)
 using UnityEngine;
+using UnityEngine.UI; // ต้องมีบรรทัดนี้เพื่อใช้ UI (เช่น Slider)
 
 public class WaveManager : MonoBehaviour
 {
@@ -19,6 +20,9 @@ public class WaveManager : MonoBehaviour
     [Header("Game Start Condition")]
     public int readyLanes = 0; // นับว่าวางป้อมไปกี่เลนแล้ว
 
+    [Header("UI Progress")]
+    public Slider waveSlider; // ลาก Slider จากหน้าจอมาใส่ช่องนี้
+
     // Instance แบบ Singleton (เพื่อให้ศัตรูที่เพิ่งเกิด สามารถวิ่งมาหา Manager เพื่อรายงานตัวตอนตายได้ง่ายๆ)
     public static WaveManager instance;
 
@@ -31,7 +35,12 @@ public class WaveManager : MonoBehaviour
     {
         if (winPanel != null) winPanel.SetActive(false);
 
-        
+        if (waveSlider != null)
+        {
+            waveSlider.minValue = 0;
+            waveSlider.maxValue = 1;
+            waveSlider.value = 0;
+        }
     }
 
     // 1. ระบบเสกมอนสเตอร์ (ทำงานแยกเป็นอิสระ ไม่กวน Update)
@@ -60,6 +69,8 @@ public class WaveManager : MonoBehaviour
         enemiesKilled++;
         Debug.Log($"<color=green>ศัตรูตาย!</color> กำจัดไปแล้ว: {enemiesKilled}/{totalEnemies}");
 
+        UpdateWaveProgress();
+
         // ตรวจสอบเงื่อนไขชนะ
         if (enemiesKilled >= totalEnemies)
         {
@@ -81,6 +92,8 @@ public class WaveManager : MonoBehaviour
         enemiesKilled++; // ใช้ตัวแปรเดิมนับรวมไปเลย จะได้ไม่ซับซ้อน
         Debug.Log($"<color=orange>มอนสเตอร์หนีเข้าบ้าน!</color> จัดการไปแล้ว: {enemiesKilled}/{totalEnemies}");
 
+        UpdateWaveProgress();
+
         // เช็คชนะเหมือนเดิม (ถ้าหลุดเข้าบ้านแล้วเลือดบ้านยังไม่หมด ก็ถือว่ารอด Wave นี้)
         if (enemiesKilled >= totalEnemies)
         {
@@ -96,6 +109,18 @@ public class WaveManager : MonoBehaviour
         {
             Debug.Log("<color=green>วางครบ 3 เลนแล้ว! มอนสเตอร์บุกได้!</color>");
             StartCoroutine(SpawnEnemyRoutine()); // สั่งมอนสเตอร์เริ่มเกิดตรงนี้!
+        }
+    }
+
+    public void UpdateWaveProgress()
+    {
+        if (waveSlider != null)
+        {
+            // คำนวณค่าเป็น 0.0 - 1.0
+            float progress = (float)enemiesKilled / totalEnemies;
+            waveSlider.value = progress;
+
+            Debug.Log($"Wave Progress: {progress * 100}%");
         }
     }
 }

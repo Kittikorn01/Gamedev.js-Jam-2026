@@ -1,10 +1,14 @@
 using UnityEngine;
-
+using UnityEngine.UI;
 public class TowerSlot : MonoBehaviour
 {
     [Header("Setup")]
     public GameObject towerPrefab;
     public float cooldownTime = 5f; // คูลดาวน์ของเลนนี้ 5 วินาที
+
+    [Header("UI Cooldown")]
+    public Image cooldownOverlay; // ลากแผ่นสีดำ (Cooldown_Overlay) มาใส่ช่องนี้
+    public GameObject slotUI;
 
     private GameObject currentTower;
     private SpriteRenderer spriteRenderer;
@@ -28,6 +32,8 @@ public class TowerSlot : MonoBehaviour
 
             if (spriteRenderer != null) spriteRenderer.enabled = false;
 
+            if (slotUI != null) slotUI.SetActive(false);
+
             // +++ ถ้านี่คือการวางป้อมครั้งแรกของเลนนี้ ให้ตะโกนบอก WaveManager +++
             if (!isFirstTimePlaced)
             {
@@ -49,6 +55,22 @@ public class TowerSlot : MonoBehaviour
         if (currentTower == null && spriteRenderer != null && !spriteRenderer.enabled)
         {
             spriteRenderer.enabled = true;
+            if (slotUI != null && !slotUI.activeSelf) slotUI.SetActive(true);
+        }
+
+        if (cooldownOverlay != null)
+        {
+            if (Time.time < nextBuildTime)
+            {
+                // ถ้าติดคูลดาวน์อยู่: คำนวณเวลาที่เหลือหารด้วยเวลาทั้งหมด (จะเข้าสูตร 0.0 ถึง 1.0 พอดี)
+                float timeRemaining = nextBuildTime - Time.time;
+                cooldownOverlay.fillAmount = timeRemaining / cooldownTime;
+            }
+            else
+            {
+                // ถ้าพร้อมวางแล้ว: ให้แผ่นสีดำหายไป (Fill = 0)
+                cooldownOverlay.fillAmount = 0;
+            }
         }
     }
 }
