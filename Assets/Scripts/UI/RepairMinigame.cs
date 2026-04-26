@@ -29,6 +29,11 @@ public class RepairMinigame : MonoBehaviour
     public Transform textSpawnPoint; // ใส่ตำแหน่งที่จะให้ตัวเลขเด้ง (ลาก Canvas หรือ RepairVisuals มาใส่ก็ได้)
     public GameObject lockoutPanel; // ใส่ป้ายสีแดง Overheat
 
+    [Header("SFX Sounds")]
+    public AudioSource audioSource;
+    public AudioClip successSound; // เสียงซ่อมผ่าน (+3)
+    public AudioClip failSound;    // เสียงซ่อมพลาด (-1)
+
     private bool isRepairActive = false; // ตัวแปรจำสถานะว่าหน้าต่างเปิดอยู่ไหม
 
     private float currentSpeed;
@@ -69,8 +74,8 @@ public class RepairMinigame : MonoBehaviour
 
             if (maxHP > 0)
             {
-                // เงื่อนไขเปิด: เลือดต่ำกว่าหรือเท่ากับ 50% และยังไม่ได้เปิด
-                if (currentHP <= maxHP * 0.5f && !isRepairActive)
+                // เงื่อนไขเปิด: เลือดต่ำกว่าหรือเท่ากับ 90% และยังไม่ได้เปิด
+                if (currentHP <= maxHP * 0.9f && !isRepairActive)
                 {
                     isRepairActive = true;
                     repairVisuals.SetActive(true);
@@ -80,6 +85,7 @@ public class RepairMinigame : MonoBehaviour
                 {
                     isRepairActive = false;
                     repairVisuals.SetActive(false);
+                    missCount = 0;
                 }
             }
         }
@@ -139,6 +145,7 @@ public class RepairMinigame : MonoBehaviour
     // ฟังก์ชันนี้ไว้ลากไปใส่ในช่อง OnClick() ของ Button ใน Unity
     public void OnRepairClick()
     {
+        Debug.Log("<color=yellow>ใครแอบกดปุ่มมมม!?</color>");
         if (isLockout) return; // ถ้าโดนแบนอยู่ กดไปก็ไม่มีอะไรเกิดขึ้น
 
         // เช็คว่าตำแหน่งเข็ม (progress) อยู่ระหว่างโซนเขียวไหม
@@ -154,24 +161,28 @@ public class RepairMinigame : MonoBehaviour
 
     void HandleSuccess()
     {
+        // +++ ใส่บรรทัดนี้ลงไป มันจะฟ้องหมดเปลือกว่าใครเรียกมันมา! +++
+        Debug.Log("<color=orange>ผู้ต้องสงสัยที่แอบเรียก HandleSuccess คือ: \n</color>" + StackTraceUtility.ExtractStackTrace());
         Debug.Log("<color=cyan>ซ่อมสำเร็จ!</color>");
         //missCount = 0; // รีเซ็ตแต้มพลาด
+        audioSource.PlayOneShot(successSound);
+        if (myTowerHealth != null)
+        {
+            myTowerHealth.Heal(3); // หรือชื่อฟังก์ชันฮีลที่ตั้มตั้งไว้ใน Health.cs
+            ShowFloatingText("+3", Color.green);
+        }
 
         RandomizeGreenZone(); // ย้ายที่โซนเขียว
         RandomizeSpeed(); // กวนตีนต่อด้วยสปีดใหม่
         // TODO: สั่งเพิ่มเลือดป้อมตรงนี้
-
-        if (myTowerHealth != null)
-        {
-            myTowerHealth.Heal(1); // หรือชื่อฟังก์ชันฮีลที่ตั้มตั้งไว้ใน Health.cs
-            ShowFloatingText("+1", Color.green);
-        }
     }
 
     void HandleFail()
     {
         missCount++;
         Debug.Log($"<color=red>พลาด!</color> สะสมแต้มพลาด: {missCount}/3");
+
+        audioSource.PlayOneShot(failSound);
 
         // TODO: สั่งลดเลือดป้อมตรงนี้ (บทลงโทษกดพลาด)
         if (myTowerHealth != null)

@@ -17,4 +17,11 @@ public class FloatingText : MonoBehaviour
         // สั่งให้ตัวหนังสือค่อยๆ ลอยขึ้นไปข้างบน
         transform.Translate(Vector3.up * moveSpeed * Time.deltaTime);
     }
+
+    void OnDisable()
+    {
+        // ถ้า UI แม่ของมันโดนปิด ก็สั่งทำลายตัวเองทิ้งไปเลย! 
+        // จะได้ไม่ต้องตื่นมาหลอกชาวบ้านตอนเปิดรอบ 2!
+        Destroy(gameObject);
+    }
 }

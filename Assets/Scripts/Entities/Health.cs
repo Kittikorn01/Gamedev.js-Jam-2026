@@ -7,6 +7,9 @@ public class Health : MonoBehaviour
 
     public HealthBar healthBar;
 
+    [Header("SFX Sounds")]
+    public AudioSource audioSource;
+    public AudioClip enemyDeathSound;
     void Awake ()
     {
         currentHealth = maxHealth;
@@ -14,6 +17,14 @@ public class Health : MonoBehaviour
         if (healthBar != null)
         {
             healthBar.SetHealth(currentHealth, maxHealth);
+        }
+    }
+
+    private void Update()
+    {
+        if (currentHealth > maxHealth)
+        {
+            currentHealth = maxHealth;
         }
     }
 
@@ -44,6 +55,8 @@ public class Health : MonoBehaviour
             {
                 WaveManager.instance.EnemyKilled();
             }
+
+            audioSource.PlayOneShot(enemyDeathSound);
         }
 
         // 2. ทำลาย Object ตัวเองทิ้ง (โค้ดเดิมของตั้ม)

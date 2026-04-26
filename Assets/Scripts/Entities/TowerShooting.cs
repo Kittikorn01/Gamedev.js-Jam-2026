@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class TowerShooting : MonoBehaviour
 {
@@ -9,6 +10,10 @@ public class TowerShooting : MonoBehaviour
     private float nextFireTime = 0;  // Next time to shoot
 
     private List<GameObject> enemiesInRange = new List<GameObject>();
+
+    [Header("SFX Sounds")]
+    public AudioSource audioSource;
+    public AudioClip shootSound;   // àÊÕÂ§ÂÔ§»×¹
 
     void Start()
     {
@@ -30,6 +35,7 @@ public class TowerShooting : MonoBehaviour
     void shoot()
     {
         Instantiate(bulletPrefab, bulletpoint.position, bulletpoint.rotation);
+        audioSource.PlayOneShot(shootSound);
     }
 
     private void OnTriggerEnter2D(Collider2D other)

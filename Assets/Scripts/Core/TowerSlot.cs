@@ -15,6 +15,10 @@ public class TowerSlot : MonoBehaviour
     private float nextBuildTime = 0f; // ตัวนับเวลาส่วนตัวของเลนนี้
     private bool isFirstTimePlaced = false; // เช็คว่าเลนนี้เคยถูกวางป้อมหรือยัง
 
+    [Header("SFX Sounds")]
+    public AudioSource audioSource;
+    public AudioClip clip; // เสียงวางป้อม
+
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -26,6 +30,8 @@ public class TowerSlot : MonoBehaviour
         if (currentTower == null && Time.time >= nextBuildTime)
         {
             currentTower = Instantiate(towerPrefab, transform.position, Quaternion.identity);
+
+            audioSource.PlayOneShot(clip);
 
             // เริ่มนับเวลาคูลดาวน์ใหม่เฉพาะเลนนี้
             nextBuildTime = Time.time + cooldownTime;

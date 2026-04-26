@@ -1,6 +1,8 @@
 using System.Collections; // ต้องมีบรรทัดนี้เพื่อใช้ Coroutine (IEnumerator)
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI; // ต้องมีบรรทัดนี้เพื่อใช้ UI (เช่น Slider)
+using System.Collections.Generic;
 
 public class WaveManager : MonoBehaviour
 {
@@ -22,6 +24,16 @@ public class WaveManager : MonoBehaviour
 
     [Header("UI Progress")]
     public Slider waveSlider; // ลาก Slider จากหน้าจอมาใส่ช่องนี้
+
+    [Header("End Game Stats UI")]
+    public TextMeshProUGUI defeatedText;
+    public TextMeshProUGUI escapedText;
+
+    private List<int> laneBag = new List<int>();
+
+    // สร้างตะกร้าแยกนับ (ถ้ายังไม่ได้แยก)
+    public int deadCount = 0;
+    public int escapedCount = 0;
 
     // Instance แบบ Singleton (เพื่อให้ศัตรูที่เพิ่งเกิด สามารถวิ่งมาหา Manager เพื่อรายงานตัวตอนตายได้ง่ายๆ)
     public static WaveManager instance;
@@ -46,23 +58,44 @@ public class WaveManager : MonoBehaviour
     // 1. ระบบเสกมอนสเตอร์ (ทำงานแยกเป็นอิสระ ไม่กวน Update)
     IEnumerator SpawnEnemyRoutine()
     {
-        // ทำซ้ำไปเรื่อยๆ จนกว่าจะเสกครบ 10 ตัว
+        int rushThreshold = Mathf.RoundToInt(totalEnemies * 0.6f);
+
         while (enemiesSpawned < totalEnemies)
         {
-            // สุ่มเลน (ดึงจุดเกิดแบบสุ่มจาก Array)
-            int randomIndex = Random.Range(0, spawnPoints.Length);
-            Transform randomSpawnPoint = spawnPoints[randomIndex];
+            if (enemiesSpawned == rushThreshold)
+            {
+                spawnDelay = 1.2f; // เข้าโหมด Rush
+            }
 
-            // เสกมอนสเตอร์ตรงจุดที่สุ่มได้
+            // *** เปลี่ยนมาใช้ฟังก์ชันถุงสุ่มแทน Random.Range ทื่อๆ ***
+            int fairLaneIndex = GetFairRandomLane();
+            Transform randomSpawnPoint = spawnPoints[fairLaneIndex];
+
             Instantiate(enemyPrefab, randomSpawnPoint.position, randomSpawnPoint.rotation);
+            enemiesSpawned++;
 
-            enemiesSpawned++; // นับว่าเสกไปแล้ว 1 ตัว
-
-            // รอเวลา 3 วินาที (หรือตามค่า spawnDelay) ค่อยวนลูปเสกตัวต่อไป
             yield return new WaitForSeconds(spawnDelay);
         }
     }
 
+    int GetFairRandomLane()
+    {
+        // ถ้าถุงว่าง ให้เติมป้ายเลน 0, 1, 2 กลับเข้าไปใหม่ (ใส่ 2 ชุดเลยก็ได้ 0,1,2,0,1,2)
+        if (laneBag.Count == 0)
+        {
+            laneBag.Add(0); laneBag.Add(1); laneBag.Add(2);
+            laneBag.Add(0); laneBag.Add(1); laneBag.Add(2);
+        }
+
+        // สุ่มเลือกป้าย 1 ใบจากถุง
+        int randomIndex = Random.Range(0, laneBag.Count);
+        int chosenLane = laneBag[randomIndex];
+
+        // หยิบแล้วเอาออกจากถุง
+        laneBag.RemoveAt(randomIndex);
+
+        return chosenLane;
+    }
     // 2. ฟังก์ชันให้ศัตรูมาเรียกตอนที่มันตาย
     public void EnemyKilled()
     {
@@ -70,6 +103,8 @@ public class WaveManager : MonoBehaviour
         Debug.Log($"<color=green>ศัตรูตาย!</color> กำจัดไปแล้ว: {enemiesKilled}/{totalEnemies}");
 
         UpdateWaveProgress();
+
+        deadCount++;
 
         // ตรวจสอบเงื่อนไขชนะ
         if (enemiesKilled >= totalEnemies)
@@ -82,6 +117,9 @@ public class WaveManager : MonoBehaviour
     {
         Debug.Log("<color=yellow>STAGE CLEAR! YOU WIN!</color>");
 
+        if (defeatedText != null) defeatedText.text = "Enemies Defeated: " + deadCount;
+        if (escapedText != null) escapedText.text = "Enemies Escaped: " + escapedCount;
+
         if (winPanel != null) winPanel.SetActive(true);
         Time.timeScale = 0f; // หยุดเกม
     }
@@ -91,6 +129,8 @@ public class WaveManager : MonoBehaviour
     {
         enemiesKilled++; // ใช้ตัวแปรเดิมนับรวมไปเลย จะได้ไม่ซับซ้อน
         Debug.Log($"<color=orange>มอนสเตอร์หนีเข้าบ้าน!</color> จัดการไปแล้ว: {enemiesKilled}/{totalEnemies}");
+
+        escapedCount++;
 
         UpdateWaveProgress();
 

@@ -11,6 +11,28 @@ public class EnemyMovement : MonoBehaviour
 
     private Health targetTower;
 
+    public Sprite[] enemyFaces; // กล่องเก็บรูปมอนสเตอร์หลายๆ แบบ
+    private SpriteRenderer mySpriteRenderer;
+
+    void Awake()
+    {
+        // ให้โค้ดวิ่งหา SpriteRenderer ในตัวมันเองรอไว้เลย
+        mySpriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+    private void Start()
+    {
+        speed = Random.Range(1f, 1.8f);
+
+        if (enemyFaces.Length > 0 && mySpriteRenderer != null)
+        {
+            // สุ่มหยิบรูปมา 1 รูป
+            int randomFaceIndex = Random.Range(0, enemyFaces.Length);
+            // เปลี่ยนหน้าตาให้ตัวมันเอง!
+            mySpriteRenderer.sprite = enemyFaces[randomFaceIndex];
+        }
+    }
+
     void Update()
     {
         if (isMoving)
@@ -25,6 +47,9 @@ public class EnemyMovement : MonoBehaviour
             // Tower is destroyed, enemy can move again
             isMoving = true;
         }
+
+        float wobble = Mathf.Sin(Time.time * 10f) * 5f;
+        transform.rotation = Quaternion.Euler(0, 0, wobble);
     }
 
     void enemyAttack()

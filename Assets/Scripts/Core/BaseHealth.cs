@@ -13,6 +13,9 @@ public class BaseHealth : MonoBehaviour
     [Header("UI System")]
     public GameObject[] heartsUI; // อาเรย์สำหรับเก็บรูปหัวใจ
 
+    [Header("SFX Sounds")]
+    public AudioSource audioSource;
+    public AudioClip enemyLeakSound;
     void Start()
     {
         currentHealth = maxHealth;
